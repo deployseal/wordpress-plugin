@@ -185,7 +185,13 @@ async function main() {
       await page.fill('#weblog_title', 'DeploySeal E2E');
       await page.fill('#user_login', ADMIN_USER);
       await page.fill('#pass1', ADMIN_PASSWORD);
-      if (await page.locator('.pw-weak').isVisible().catch(() => false)) await page.check('.pw-checkbox');
+      // The strength meter runs asynchronously and may flash "weak" (and hide the confirm box) while it
+      // loads; tick "Confirm use of weak password" through the DOM so the submit button is never blocked.
+      await page.waitForTimeout(1000);
+      await page.evaluate(() => {
+        const box = document.querySelector('.pw-checkbox');
+        if (box && !box.checked) { box.checked = true; box.dispatchEvent(new Event('change', { bubbles: true })); }
+      });
       await page.fill('#admin_email', 'admin@deployseal.test');
       await Promise.all([page.waitForNavigation(), page.click('#submit')]);
       assert(await page.locator('text=Success!').count(), 'install wizard did not report success');
