@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<ruleset name="DeploySeal">
+	<description>WordPress Coding Standards for the DeploySeal plugin.</description>
+	<file>./deployseal</file>
+	<arg name="extensions" value="php"/>
+	<arg value="sp"/>
+	<arg name="colors"/>
+
+	<config name="testVersion" value="7.4-"/>
+	<config name="minimum_wp_version" value="6.0"/>
+
+	<rule ref="WordPress"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="deployseal"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="deployseal"/>
+				<element value="DeploySeal\WP"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

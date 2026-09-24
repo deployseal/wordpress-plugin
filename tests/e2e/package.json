@@ -1,0 +1,12 @@
+{
+  "name": "deployseal-wordpress-e2e",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end check of the DeploySeal WordPress plugin against WordPress in Docker.",
+  "scripts": {
+    "verify": "node verify.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.62.1"
+  }
+}

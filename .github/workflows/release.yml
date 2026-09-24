@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >
+          Release tag to build and attach the zip to. Required for a manual run (a push of a "v*"
+          tag uses that tag automatically). The release is created if it is missing; otherwise
+          assets of the same name are overwritten.
+        required: false
+        type: string
+
+jobs:
+  release:
+    name: Build and attach the zip
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine release tag
+        id: tag
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ inputs.tag }}" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::workflow_dispatch needs a 'tag' input naming the release to build for." >&2
+            exit 1
+          fi
+
+      - name: Build zip
+        shell: pwsh
+        run: ./build/build.ps1
+
+      - name: Tag must match the plugin version
+        run: |
+          version=$(grep -Po "define\( 'DEPLOYSEAL_VERSION', '\K[^']+" deployseal/deployseal.php)
+          if [ "v$version" != "${{ steps.tag.outputs.name }}" ]; then
+            echo "::error::Tag ${{ steps.tag.outputs.name }} does not match plugin version $version (run build/bump.ps1)." >&2
+            exit 1
+          fi
+
+      - name: Compute checksums
+        working-directory: artifacts
+        run: |
+          sha256sum *.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create/update the release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          files: |
+            artifacts/*.zip
+            artifacts/SHA256SUMS.txt
+          fail_on_unmatched_files: true

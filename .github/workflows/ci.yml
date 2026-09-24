@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  php-lint:
+    name: php -l (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["7.4", "8.1", "8.3"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: none
+          coverage: none
+      - name: php -l on every plugin file
+        run: |
+          set -e
+          find deployseal -name '*.php' -print0 | xargs -0 -n1 php -l
+
+  phpcs:
+    name: PHPCS (WordPress Coding Standards)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer
+          coverage: none
+      - name: Install coding standards
+        run: composer install --no-interaction --no-progress
+      - name: phpcs
+        run: vendor/bin/phpcs
+
+  build:
+    name: Build plugin zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build zip
+        shell: pwsh
+        run: ./build/build.ps1
+      - name: Check zip layout (forward slashes, plugin folder at the root)
+        run: |
+          unzip -l artifacts/deployseal-*.zip
+          unzip -Z1 artifacts/deployseal-*.zip | grep -v '^deployseal/' && exit 1 || true
+          unzip -Z1 artifacts/deployseal-*.zip | grep -q '^deployseal/deployseal.php$'
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployseal-plugin-zip
+          path: artifacts/deployseal-*.zip
+          if-no-files-found: error
+
+  e2e:
+    name: End to end (WordPress latest in Docker)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: deployseal-plugin-zip
+          path: artifacts
+      - name: Start WordPress + MariaDB
+        run: docker compose up -d --wait
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        working-directory: tests/e2e
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: verify.mjs
+        run: node tests/e2e/verify.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: artifacts/*.png
+          if-no-files-found: ignore
+      - name: WordPress logs on failure
+        if: failure()
+        run: docker compose logs --tail=200 wordpress

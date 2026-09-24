@@ -1,0 +1,53 @@
+# Local WordPress (latest) + MariaDB for the end-to-end check. The plugin is NOT mounted:
+# tests/e2e/verify.mjs uploads build output (artifacts/deployseal-<version>.zip) through
+# Plugins → Add New → Upload Plugin, exactly as a site owner would.
+#
+#   ./build/build.ps1
+#   docker compose up -d
+#   node tests/e2e/verify.mjs          -> install wizard, upload + activate, configure, assertions
+#   docker compose down -v
+#
+# The wizard runs through the browser; the database is created by MariaDB from the environment
+# below and the WordPress tables by the wizard (nothing is pre-installed).
+
+name: deployseal-wp
+
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - wp-db:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8100:80"
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    # The stub DeploySeal API that verify.mjs starts runs on the host; Linux runners need the
+    # host-gateway mapping that Docker Desktop provides by itself.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - wp-html:/var/www/html
+
+volumes:
+  wp-db:
+  wp-html:
