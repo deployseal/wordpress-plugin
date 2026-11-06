@@ -33,13 +33,17 @@ final class Plugin {
 	/**
 	 * The six-hourly schedule.
 	 *
+	 * Other code may ask for the schedules before "init" (WooCommerce does), and WordPress 6.7+
+	 * warns when a plugin's translations are loaded that early, so the label is translated only
+	 * once "init" has run. Before that the English label is returned untranslated.
+	 *
 	 * @param array $schedules Schedules.
 	 * @return array
 	 */
 	public static function cron_schedules( $schedules ) {
 		$schedules[ Inventory::CRON_SCHEDULE ] = array(
 			'interval' => Contract::INVENTORY_SEND_PERIOD_HOURS * HOUR_IN_SECONDS,
-			'display'  => __( 'Every 6 hours (DeploySeal inventory)', 'deployseal' ),
+			'display'  => did_action( 'init' ) ? __( 'Every 6 hours (DeploySeal inventory)', 'deployseal' ) : 'Every 6 hours (DeploySeal inventory)',
 		);
 		return $schedules;
 	}

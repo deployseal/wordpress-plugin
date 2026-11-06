@@ -53,7 +53,7 @@ function loadPlaywright() {
 }
 const { chromium } = loadPlaywright();
 
-const PLUGIN_VERSION = '1.0.0';
+const PLUGIN_VERSION = '1.0.1';
 const INSTALLER = `wordpress-plugin/${PLUGIN_VERSION}`;
 
 const BASE = (process.env.DS_WP_URL || 'http://localhost:8100').replace(/\/$/, '');

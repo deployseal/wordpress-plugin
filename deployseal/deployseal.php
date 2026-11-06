@@ -3,7 +3,7 @@
  * Plugin Name:       DeploySeal
  * Plugin URI:        https://deployseal.com/docs/wordpress
  * Description:       Loads the DeploySeal tester widget on your site so testers can pin issues on the real pages, and declares which environment and which build they were on so the readiness report can prove what was tested.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            DeploySeal
@@ -20,7 +20,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /** Plugin version. build/bump.ps1 keeps it in step with the header, readme.txt and the installer string. */
-define( 'DEPLOYSEAL_VERSION', '1.0.0' );
+define( 'DEPLOYSEAL_VERSION', '1.0.1' );
 define( 'DEPLOYSEAL_FILE', __FILE__ );
 define( 'DEPLOYSEAL_DIR', plugin_dir_path( __FILE__ ) );
 

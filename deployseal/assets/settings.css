@@ -1,0 +1,52 @@
+/* Settings → DeploySeal. Enqueued by Settings_Page::enqueue_assets on that screen only. */
+.deployseal-settings details.deployseal-fold {
+	margin-top: 24px;
+	border-top: 1px solid #c3c4c7;
+}
+
+.deployseal-settings details.deployseal-fold > summary {
+	cursor: pointer;
+	padding: 12px 0 0;
+}
+
+.deployseal-settings details.deployseal-fold > summary h2 {
+	display: inline;
+}
+
+.deployseal-settings .deployseal-facts code {
+	font-size: 13px;
+}
+
+.deployseal-settings .deployseal-facts code.deployseal-build-marker {
+	font-size: 1.1em;
+}
+
+.deployseal-settings code.deployseal-break {
+	word-break: break-all;
+}
+
+.deployseal-settings pre.deployseal-snippet {
+	white-space: pre-wrap;
+	word-break: break-all;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	padding: 8px 10px;
+	margin: 0;
+	max-width: 60em;
+}
+
+.deployseal-settings .deployseal-warn {
+	color: #996800;
+}
+
+.deployseal-settings .deployseal-bad {
+	color: #b32d2e;
+}
+
+.deployseal-settings .deployseal-good {
+	color: #007017;
+}
+
+.deployseal-settings form.deployseal-hidden {
+	display: none;
+}

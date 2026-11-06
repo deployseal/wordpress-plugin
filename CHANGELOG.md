@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 — 2026-11-06
+
+- The settings page's styles now ship as `assets/settings.css`, enqueued with `wp_enqueue_style()`
+  on that screen only (WordPress.org plugin review). No inline `<style>` or `style=""` remains.
+- No change to the rendered tag, the build marker or the inventory.
+
 ## 1.0.0 — 2026-09-24
 
 First release, install contract v1.2.

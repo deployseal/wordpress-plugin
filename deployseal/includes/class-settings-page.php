@@ -23,12 +23,23 @@ final class Settings_Page {
 	/** The admin-post.php action of "Send inventory now". */
 	const SEND_ACTION = 'deployseal_send_inventory';
 
+	/** Stylesheet handle. */
+	const STYLE_HANDLE = 'deployseal-settings';
+
+	/**
+	 * Hook suffix of the settings screen, set by add_options_page(); the stylesheet loads there only.
+	 *
+	 * @var string
+	 */
+	private static $hook_suffix = '';
+
 	/**
 	 * Hooks.
 	 */
 	public static function register() {
 		add_action( 'admin_init', array( __CLASS__, 'register_setting' ) );
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 		add_action( 'admin_post_' . self::SEND_ACTION, array( __CLASS__, 'handle_send' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( DEPLOYSEAL_FILE ), array( __CLASS__, 'action_links' ) );
 	}
@@ -53,12 +64,32 @@ final class Settings_Page {
 	 * Settings → DeploySeal.
 	 */
 	public static function add_menu() {
-		add_options_page(
+		$hook = add_options_page(
 			__( 'DeploySeal', 'deployseal' ),
 			__( 'DeploySeal', 'deployseal' ),
 			'manage_options',
 			self::SLUG,
 			array( __CLASS__, 'render' )
+		);
+		if ( is_string( $hook ) ) {
+			self::$hook_suffix = $hook;
+		}
+	}
+
+	/**
+	 * The page's stylesheet, on the page itself and nowhere else in wp-admin.
+	 *
+	 * @param string $hook_suffix The current admin screen.
+	 */
+	public static function enqueue_assets( $hook_suffix ) {
+		if ( '' === self::$hook_suffix || $hook_suffix !== self::$hook_suffix ) {
+			return;
+		}
+		wp_enqueue_style(
+			self::STYLE_HANDLE,
+			plugins_url( 'assets/settings.css', DEPLOYSEAL_FILE ),
+			array(),
+			DEPLOYSEAL_VERSION
 		);
 	}
 
@@ -139,17 +170,6 @@ final class Settings_Page {
 		$inventory_open = $api_key_set || ! empty( $options['send_inventory'] ) || isset( $_GET['deployseal-inventory'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
 		?>
 		<div class="wrap deployseal-settings">
-			<style>
-				.deployseal-settings details.deployseal-fold { margin-top: 24px; border-top: 1px solid #c3c4c7; }
-				.deployseal-settings details.deployseal-fold > summary { cursor: pointer; padding: 12px 0 0; }
-				.deployseal-settings details.deployseal-fold > summary h2 { display: inline; }
-				.deployseal-settings .deployseal-facts code { font-size: 13px; }
-				.deployseal-settings pre.deployseal-snippet { white-space: pre-wrap; word-break: break-all; background: #f6f7f7; border: 1px solid #dcdcde; padding: 8px 10px; margin: 0; max-width: 60em; }
-				.deployseal-settings .deployseal-warn { color: #996800; }
-				.deployseal-settings .deployseal-bad { color: #b32d2e; }
-				.deployseal-settings .deployseal-good { color: #007017; }
-			</style>
-
 			<h1><?php esc_html_e( 'DeploySeal', 'deployseal' ); ?></h1>
 
 			<?php
@@ -228,7 +248,7 @@ final class Settings_Page {
 							<?php if ( '' === $marker['marker'] ) : ?>
 								<span class="deployseal-bad" id="deployseal-build"><?php esc_html_e( '(none — the data-ds-build attribute will be omitted)', 'deployseal' ); ?></span>
 							<?php else : ?>
-								<code id="deployseal-build" style="font-size:1.1em"><?php echo esc_html( $marker['marker'] ); ?></code>
+								<code id="deployseal-build" class="deployseal-build-marker"><?php echo esc_html( $marker['marker'] ); ?></code>
 							<?php endif; ?>
 							<p class="description"><?php esc_html_e( 'Source', 'deployseal' ); ?>: <span id="deployseal-build-source"><?php echo esc_html( $marker['description'] ); ?></span></p>
 							<?php if ( '' !== $marker['sha_path'] ) : ?>
@@ -371,12 +391,12 @@ final class Settings_Page {
 							<td>
 								<code id="deployseal-inventory-count"><?php echo esc_html( (string) count( $items ) ); ?></code>
 								<span class="description">(<span id="deployseal-inventory-enabled"><?php echo esc_html( (string) $enabled_n ); ?></span> <?php esc_html_e( 'active', 'deployseal' ); ?>)</span>
-								<p class="description"><?php esc_html_e( 'Fingerprint', 'deployseal' ); ?>: <code id="deployseal-inventory-sha" style="word-break:break-all">sha256:<?php echo esc_html( $snapshot['sha256'] ); ?></code></p>
+								<p class="description"><?php esc_html_e( 'Fingerprint', 'deployseal' ); ?>: <code id="deployseal-inventory-sha" class="deployseal-break">sha256:<?php echo esc_html( $snapshot['sha256'] ); ?></code></p>
 							</td>
 						</tr>
 						<tr>
 							<th scope="row"><?php esc_html_e( 'Sent to', 'deployseal' ); ?></th>
-							<td><code id="deployseal-inventory-endpoint" style="word-break:break-all"><?php echo esc_html( Inventory::endpoint( $options ) ); ?></code></td>
+							<td><code id="deployseal-inventory-endpoint" class="deployseal-break"><?php echo esc_html( Inventory::endpoint( $options ) ); ?></code></td>
 						</tr>
 						<?php if ( is_array( $last ) && ! empty( $last['message'] ) ) : ?>
 							<tr>
@@ -409,7 +429,7 @@ final class Settings_Page {
 				</details>
 			</form>
 
-			<form id="deployseal-send-inventory-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:none">
+			<form id="deployseal-send-inventory-form" class="deployseal-hidden" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="<?php echo esc_attr( self::SEND_ACTION ); ?>" />
 				<?php wp_nonce_field( self::SEND_ACTION ); ?>
 			</form>

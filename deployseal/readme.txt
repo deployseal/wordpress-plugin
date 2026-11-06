@@ -4,7 +4,7 @@ Tags: testing, uat, qa, release, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -74,6 +74,9 @@ Most often the origin: DeploySeal matches `scheme://host[:port]` exactly, so reg
 No. It only works from the environment's registered origins, which is why it can sit in your HTML. The API key used for the platform inventory is a secret: the settings page never shows it again once saved.
 
 == Changelog ==
+
+= 1.0.1 =
+* Settings page styles moved to a stylesheet enqueued on that screen only; no inline styles. Nothing else changed.
 
 = 1.0.0 =
 * First release: the contract tag (site key, environment label, build marker, `data-ds-installer="wordpress-plugin/1.0.0"`) in `<head>` on the public site; optional in wp-admin; never on the login page.
