@@ -73,6 +73,11 @@ Most often the origin: DeploySeal matches `scheme://host[:port]` exactly, so reg
 
 No. It only works from the environment's registered origins, which is why it can sit in your HTML. The API key used for the platform inventory is a secret: the settings page never shows it again once saved.
 
+== Screenshots ==
+
+1. Settings → DeploySeal. Site key and Enabled are the only required fields; the page shows the origins to register, the declared environment label, the build marker and the exact tag that will be rendered.
+2. Platform inventory. With a DeploySeal API key the plugin reports the installed plugins and themes, at which versions, every six hours or on demand.
+
 == Changelog ==
 
 = 1.0.1 =

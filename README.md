@@ -193,3 +193,7 @@ the zip and `SHA256SUMS.txt` to the GitHub release.
 ## License
 
 MIT.
+
+## Publishing to WordPress.org
+
+The directory listing at <https://wordpress.org/plugins/deployseal> is fed from Subversion, not from this repository. After a release tag here, run `./build/publish-wporg.ps1 -DryRun` to see what would change, then `./build/publish-wporg.ps1 -Message "x.y.z"` to commit trunk, `tags/x.y.z` and the directory assets (`.wordpress-org/`: banners, icons, screenshots). The script runs the svn client in a Docker container and prompts for the WordPress.org SVN password of the `deployseal` account; the password is never written anywhere. WordPress.org reads `readme.txt` from the stable tag, so a readme change needs a new tag.
